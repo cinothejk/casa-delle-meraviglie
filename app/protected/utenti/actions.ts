@@ -426,7 +426,5 @@ export async function generaResetPassword(
 
   revalidatePath("/protected/utenti");
 
-  return {
-    success: true,
-  };
+  return;
 }

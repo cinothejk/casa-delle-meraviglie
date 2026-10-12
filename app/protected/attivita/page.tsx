@@ -187,9 +187,11 @@ export default async function AttivitaPage() {
                         </h3>
 
                         {attivitaItem.cerchi && (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Cerchio: {attivitaItem.cerchi.nome}
-                        </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Cerchio: {
+                              (attivitaItem.cerchi as { nome: string }[])[0]?.nome
+                            }
+                          </p>
                         )}
                     </div>
 

@@ -64,9 +64,12 @@ export default function ImportaSociPage() {
         const errori: string[] = [];
 
         result.errors.forEach((errore) => {
-          errori.push(
-            `Errore CSV alla riga ${errore.row + 2}: ${errore.message}`
-          );
+          const posizione =
+            errore.row === undefined
+              ? "Errore CSV"
+              : `Errore CSV alla riga ${errore.row + 2}`;
+
+          errori.push(`${posizione}: ${errore.message}`);
         });
 
         const normalizzate: SocioCSV[] = result.data.map((riga) => ({
