@@ -181,14 +181,20 @@ return ( <main className="min-h-screen bg-[#FFF8EF] text-[#49372F]"> <div classN
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            <div className="hidden text-right sm:block lg:hidden">
-              <p className="max-w-40 truncate text-sm font-semibold">
+          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
+            <div className="hidden min-w-0 text-right sm:block lg:hidden">
+              <p
+                className="max-w-[clamp(5rem,20vw,10rem)] truncate text-sm font-semibold text-[#49372F]"
+                title={nomeVisualizzato}
+              >
                 {nomeVisualizzato}
               </p>
             </div>
-            <AuthButton />
+            <div className="shrink-0">
+              <AuthButton />
+            </div>
           </div>
+
         </div>
 
         {/* Navigazione mobile e tablet */}
