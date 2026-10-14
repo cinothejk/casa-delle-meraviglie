@@ -120,26 +120,45 @@ export default async function AttivitaPage({
     .eq("attivo", true)
     .order("nome");
 
-  // Carica le attività.
-  const { data: attivita, error: attivitaError } =
-    await supabase
-      .from("attivita")
-      .select(`
+
+// Carica le attività.
+const { data: attivitaData, error: attivitaError } =
+  await supabase
+    .from("attivita")
+    .select(`
+      id,
+      titolo,
+      descrizione,
+      luogo,
+      stato,
+      cerchio_id,
+      created_at,
+      cerchi (
         id,
-        titolo,
-        descrizione,
-        luogo,
-        stato,
-        cerchio_id,
-        created_at,
-        cerchi (
-          id,
-          nome
-        )
-      `)
-      .order("created_at", {
-        ascending: false,
-      });
+        nome
+      )
+    `)
+    .order("created_at", {
+      ascending: false,
+    });
+
+const attivita = (attivitaData ?? []).sort((a, b) => {
+  // Le attività chiuse vanno in fondo.
+  const aChiusa = a.stato === "chiusa";
+  const bChiusa = b.stato === "chiusa";
+
+  if (aChiusa !== bChiusa) {
+    return aChiusa ? 1 : -1;
+  }
+
+  // A parità di stato, dalla più recente alla meno recente.
+  return (
+    new Date(b.created_at).getTime() -
+    new Date(a.created_at).getTime()
+  );
+});
+
+
 
   if (attivitaError) {
     console.error("Errore caricamento attività:", attivitaError);
