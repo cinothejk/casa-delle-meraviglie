@@ -4,19 +4,18 @@ export const instant = false;
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
-  creaAttivita,
   modificaAttivita,
   aggiornaStatoPartecipazione,
   candidatiAttivita,
   iniziaPartecipazione,
-  aggiornaLavoroPartecipazione,
-  chiudiPartecipazione,
   approvaPartecipazione,
   rifiutaPartecipazione,
+  cambiaStatoAttivitaRapido
 } from "./actions";
 
 import ActivityCreateModal from "./ActivityCreateModal";
 import ActivityDetailModal from "./ActivityDetailModal";
+import PartecipazioneInCorsoForm from "./PartecipazioneInCorsoForm";
 
 /**
  * Supabase può restituire una relazione come oggetto oppure come array.
@@ -374,6 +373,7 @@ const attivita = (attivitaData ?? []).sort((a, b) => {
               {attivitaPubblicate.map((attivitaItem) => {
                 const miaPartecipazione =
                   miePartecipazioni.get(attivitaItem.id);
+
                 const nomeCerchio = getNomeCerchio(attivitaItem.cerchi);
 
                 return (
@@ -470,118 +470,21 @@ const attivita = (attivitaData ?? []).sort((a, b) => {
                                 </div>
                               </div>
 
-                              <form
-                                action={aggiornaLavoroPartecipazione}
-                                className="space-y-4"
-                              >
-                                <input
-                                  type="hidden"
-                                  name="partecipazione_id"
-                                  value={miaPartecipazione.id}
-                                />
+                              
+                              <PartecipazioneInCorsoForm
+                                partecipazioneId={miaPartecipazione.id}
+                                attivitaId={attivitaItem.id}
+                                dataLavoro={miaPartecipazione.data_lavoro ?? ""}
+                                oreInserite={oreInserite ?? null}
+                                noteSocio={miaPartecipazione.note_socio ?? ""}
+                                labelClass={labelClass}
+                                inputClass={inputClass}
+                                primaryButtonClass={primaryButtonClass}
+                                secondaryButtonClass={secondaryButtonClass}
+                              />
 
-                                <div className="space-y-2">
-                                  <label
-                                    htmlFor={`data-lavoro-${attivitaItem.id}`}
-                                    className={labelClass}
-                                  >
-                                    Data del lavoro
-                                  </label>
-                                  <input
-                                    id={`data-lavoro-${attivitaItem.id}`}
-                                    name="data_lavoro"
-                                    type="date"
-                                    defaultValue={
-                                      miaPartecipazione.data_lavoro ?? ""
-                                    }
-                                    required
-                                    className={inputClass}
-                                  />
-                                </div>
 
-                                <div className="space-y-2">
-                                  <label
-                                    htmlFor={`ore-${attivitaItem.id}`}
-                                    className={labelClass}
-                                  >
-                                    Ore effettuate
-                                  </label>
-                                  <select
-                                    id={`ore-${attivitaItem.id}`}
-                                    name="ore"
-                                    defaultValue={oreInserite ?? ""}
-                                    required
-                                    className={inputClass}
-                                  >
-                                    <option value="">
-                                      Seleziona le ore
-                                    </option>
-                                    <option value="1">0,5 ore</option>
-                                    <option value="2">1 ora</option>
-                                    <option value="3">1,5 ore</option>
-                                    <option value="4">2 ore</option>
-                                    <option value="5">2,5 ore</option>
-                                    <option value="6">3 ore</option>
-                                    <option value="7">3,5 ore</option>
-                                    <option value="8">4 ore</option>
-                                    <option value="9">4,5 ore</option>
-                                    <option value="10">5 ore</option>
-                                    <option value="11">5,5 ore</option>
-                                    <option value="12">6 ore</option>
-                                    <option value="13">6,5 ore</option>
-                                    <option value="14">7 ore</option>
-                                  </select>
-                                  <p className="text-xs leading-5 text-[#857568]">
-                                    Puoi registrare da mezz'ora a 7 ore.
-                                  </p>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label
-                                    htmlFor={`note-${attivitaItem.id}`}
-                                    className={labelClass}
-                                  >
-                                    Note sul lavoro
-                                  </label>
-                                  <textarea
-                                    id={`note-${attivitaItem.id}`}
-                                    name="note_socio"
-                                    defaultValue={
-                                      miaPartecipazione.note_socio ?? ""
-                                    }
-                                    rows={3}
-                                    className={inputClass}
-                                    placeholder="Descrivi brevemente il lavoro svolto..."
-                                  />
-                                </div>
-
-                                <button
-                                  type="submit"
-                                  className={primaryButtonClass}
-                                >
-                                  Salva lavoro
-                                </button>
-                              </form>
-
-                              <div className="mt-4 border-t border-sky-200 pt-4">
-                                <form action={chiudiPartecipazione}>
-                                  <input
-                                    type="hidden"
-                                    name="partecipazione_id"
-                                    value={miaPartecipazione.id}
-                                  />
-                                  <button
-                                    type="submit"
-                                    className={secondaryButtonClass}
-                                  >
-                                    Chiudi partecipazione
-                                  </button>
-                                </form>
-                                <p className="mt-2 text-xs leading-5 text-sky-900/70">
-                                  Chiudi la partecipazione quando hai terminato
-                                  e hai salvato i dati del lavoro.
-                                </p>
-                              </div>
+                              
                             </div>
                           );
                         }
@@ -763,15 +666,78 @@ const attivita = (attivitaData ?? []).sort((a, b) => {
 
               const nomeCerchio = getNomeCerchio(attivitaItem.cerchi);
 
+              const inAttesaApprovazione = partecipazioniAttivita.some(
+                (p) => p.stato === "completata"
+              );
+
+              const stilePubblica =
+                "rounded-full bg-[#81977A] px-4 py-2 text-sm font-medium text-white hover:opacity-90";
+
+              const stileSecondario =
+                "rounded-full border border-[#C96F52] px-4 py-2 text-sm font-medium text-[#C96F52] hover:bg-[#FFF8EF]";
+
+              const azioniRapide: {
+                etichetta: string;
+                stato: string;
+                stile: string;
+              }[] = !puoGestire
+                ? []
+                : attivitaItem.stato === "bozza"
+                  ? [
+                      {
+                        etichetta: "Pubblica",
+                        stato: "pubblicata",
+                        stile: stilePubblica,
+                      },
+                      {
+                        etichetta: "Annulla",
+                        stato: "annullata",
+                        stile: stileSecondario,
+                      },
+                    ]
+                  : attivitaItem.stato === "annullata"
+                    ? [
+                        {
+                          etichetta: "Chiudi",
+                          stato: "chiusa",
+                          stile: stilePubblica,
+                        },
+                        {
+                          etichetta: "Torna bozza",
+                          stato: "bozza",
+                          stile: stileSecondario,
+                        },
+                      ]
+                    : attivitaItem.stato === "pubblicata" && !inAttesaApprovazione
+                      ? [
+                          {
+                            etichetta: "Chiudi",
+                            stato: "chiusa",
+                            stile: stileSecondario,
+                          },
+                        ]
+                      : [];
+
+              const messaggioStato =
+                puoGestire &&
+                attivitaItem.stato === "pubblicata" &&
+                inAttesaApprovazione
+                  ? "In attesa di approvazione"
+                  : undefined;  
+
               return (
                 <ActivityDetailModal
-                key={attivitaItem.id}
-                titolo={attivitaItem.titolo}
-                cerchio={nomeCerchio ?? "Cerchio non specificato"}
-                stato={etichettaStato(attivitaItem.stato)}
-                statoClass={stileStato(attivitaItem.stato)}
-
+                  key={attivitaItem.id}
+                  titolo={attivitaItem.titolo}
+                  cerchio={nomeCerchio ?? "Cerchio non specificato"}
+                  stato={etichettaStato(attivitaItem.stato)}
+                  statoClass={stileStato(attivitaItem.stato)}
+                  attivitaId={attivitaItem.id}
+                  azioneRapida={cambiaStatoAttivitaRapido}
+                  azioniRapide={azioniRapide}
+                  messaggioStato={messaggioStato}
                 >
+
 
                 <div className="space-y-5">
 

@@ -807,3 +807,102 @@ export async function rifiutaPartecipazione(
 
   revalidatePath("/protected/attivita");
 }
+
+
+export async function cambiaStatoAttivitaRapido(
+  formData: FormData
+) {
+  const supabase = await verificaGestione();
+
+  const id = String(formData.get("id") ?? "");
+  const nuovoStato = String(formData.get("stato") ?? "");
+
+  if (!id) {
+    throw new Error("Attività non specificata.");
+  }
+
+  const { data: attivitaPrima, error: letturaError } =
+    await supabase
+      .from("attivita")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+  if (letturaError || !attivitaPrima) {
+    throw new Error("Attività non trovata.");
+  }
+
+  const statoAttuale = attivitaPrima.stato;
+
+  const transizioniValide: Record<string, string[]> = {
+    bozza: ["pubblicata", "annullata"],
+    annullata: ["chiusa", "bozza"],
+    pubblicata: ["chiusa"],
+  };
+
+  if (!transizioniValide[statoAttuale]?.includes(nuovoStato)) {
+    throw new Error(
+      "Passaggio di stato non consentito."
+    );
+  }
+
+  // Non chiudere un'attività con partecipazioni
+  // completate ancora in attesa di approvazione.
+  if (
+    statoAttuale === "pubblicata" &&
+    nuovoStato === "chiusa"
+  ) {
+    const { data: inAttesa, error: partecipazioniError } =
+      await supabase
+        .from("partecipazioni")
+        .select("id")
+        .eq("attivita_id", id)
+        .eq("stato", "completata")
+        .limit(1);
+
+    if (partecipazioniError) {
+      throw new Error(
+        "Impossibile verificare le approvazioni delle partecipazioni."
+      );
+    }
+
+    if (inAttesa && inAttesa.length > 0) {
+      throw new Error(
+        "Non puoi chiudere l'attività: ci sono partecipazioni da approvare."
+      );
+    }
+  }
+
+  const { data: attivitaDopo, error: updateError } =
+    await supabase
+      .from("attivita")
+      .update({ stato: nuovoStato })
+      .eq("id", id)
+      .eq("stato", statoAttuale)
+      .select("*")
+      .single();
+
+  if (updateError || !attivitaDopo) {
+    throw new Error(
+      updateError?.message ??
+        "L'attività è stata modificata da un altro utente. Aggiorna la pagina."
+    );
+  }
+
+  const { error: auditError } = await supabase.rpc(
+    "registra_audit",
+    {
+      p_azione: "modifica",
+      p_tabella: "attivita",
+      p_record_id: id,
+      p_dati_precedenti: attivitaPrima,
+      p_dati_nuovi: attivitaDopo,
+    }
+  );
+
+  if (auditError) {
+    console.error("Errore registrazione audit:", auditError);
+  }
+
+  revalidatePath("/protected/attivita");
+}

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { generaReport, chiudiPeriodo } from "./actions";
+import { generaReport, chiudiPeriodo,riapriPeriodo } from "./actions";
+import RiapriPeriodoButton from "./RiapriPeriodoButton";
 
 import Link from "next/link";
 
@@ -224,13 +225,26 @@ export default async function ReportPage({
           </div>
 
           {periodo?.stato === "chiuso" && (
-            <div className="rounded-md border px-3 py-2 text-sm">
-              Periodo chiuso
-              {periodo.data_chiusura
-                ? ` il ${periodo.data_chiusura}`
-                : ""}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-md border px-3 py-2 text-sm">
+                Periodo chiuso
+                {periodo.data_chiusura
+                  ? ` il ${periodo.data_chiusura}`
+                  : ""}
+              </div>
+
+              <RiapriPeriodoButton
+                anno={anno}
+                mese={mese}
+                nomeMese={mesi[mese - 1]}
+              />
             </div>
           )}
+
+
+          
+
+
         </div>
 
         {periodo?.stato === "aperto" && (

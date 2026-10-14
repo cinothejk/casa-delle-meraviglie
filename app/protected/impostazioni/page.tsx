@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { aggiornaImpostazioni } from "./actions";
+
+
+import ImpostazioniForm from "./ImpostazioniForm";
 
 export const instant = false;
 
@@ -70,141 +72,12 @@ export default async function ImpostazioniPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border bg-white p-6 dark:bg-gray-900">
-        <form
-          action={aggiornaImpostazioni}
-          className="space-y-6"
-        >
-          <div>
-            <h2 className="text-lg font-semibold">
-              Regole mensili
-            </h2>
-
-            <p className="mt-1 text-sm text-muted-foreground">
-              Questi valori vengono utilizzati per il
-              calcolo dei crediti delle famiglie.
-            </p>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            <div>
-              <label
-                htmlFor="ore_massime"
-                className="block text-sm font-medium"
-              >
-                Ore massime mensili
-              </label>
-
-              <input
-                id="ore_massime"
-                name="ore_massime"
-                type="number"
-                min="0.5"
-                max="24"
-                step="0.5"
-                defaultValue={oreMassime}
-                className="mt-2 w-full rounded-lg border bg-transparent px-3 py-2"
-                required
-              />
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Limite complessivo per famiglia.
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="valore_ora"
-                className="block text-sm font-medium"
-              >
-                Valore di 1 ora (€)
-              </label>
-
-              <input
-                id="valore_ora"
-                name="valore_ora"
-                type="number"
-                min="0.01"
-                max="1000"
-                step="0.01"
-                defaultValue={valoreOra}
-                className="mt-2 w-full rounded-lg border bg-transparent px-3 py-2"
-                required
-              />
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Valore economico di ogni ora approvata.
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="credito_massimo"
-                className="block text-sm font-medium"
-              >
-                Credito massimo mensile (€)
-              </label>
-
-              <input
-                id="credito_massimo"
-                name="credito_massimo"
-                type="number"
-                min="0.01"
-                max="10000"
-                step="0.01"
-                defaultValue={creditoMassimo}
-                className="mt-2 w-full rounded-lg border bg-transparent px-3 py-2"
-                required
-              />
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Tetto massimo di credito per famiglia.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-gray-50 p-4 text-sm dark:bg-gray-800">
-            <p className="font-medium">
-              Configurazione attuale
-            </p>
-
-            <ul className="mt-2 space-y-1 text-muted-foreground">
-              <li>
-                Massimo:{" "}
-                {oreMassime.toLocaleString("it-IT")} ore
-                / famiglia / mese
-              </li>
-
-              <li>
-                Valore:{" "}
-                {valoreOra.toLocaleString("it-IT", {
-                  style: "currency",
-                  currency: "EUR",
-                })}
-                / ora
-              </li>
-
-              <li>
-                Credito massimo:{" "}
-                {creditoMassimo.toLocaleString("it-IT", {
-                  style: "currency",
-                  currency: "EUR",
-                })}
-                / famiglia / mese
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white hover:opacity-90 dark:bg-white dark:text-black"
-            >
-              Salva impostazioni
-            </button>
-          </div>
-        </form>
-      </div>
+      <ImpostazioniForm
+        oreMassime={oreMassime}
+        valoreOra={valoreOra}
+        creditoMassimo={creditoMassimo}
+      />
+      
 
       <div className="rounded-xl border p-5">
         <h2 className="font-semibold">

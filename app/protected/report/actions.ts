@@ -81,3 +81,37 @@ export async function chiudiPeriodo(formData: FormData) {
 
   revalidatePath("/protected/report");
 }
+
+
+
+export async function riapriPeriodo(formData: FormData) {
+  const supabase = await verificaGestione();
+
+  const anno = Number(formData.get("anno"));
+  const mese = Number(formData.get("mese"));
+
+  if (
+    !Number.isInteger(anno) ||
+    !Number.isInteger(mese) ||
+    anno < 2020 ||
+    anno > 2100 ||
+    mese < 1 ||
+    mese > 12
+  ) {
+    throw new Error("Anno o mese non validi");
+  }
+
+  const { error } = await supabase.rpc(
+    "riapri_periodo_mensile",
+    {
+      p_anno: anno,
+      p_mese: mese,
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/protected/report");
+}
