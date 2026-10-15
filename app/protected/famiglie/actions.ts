@@ -1,3 +1,4 @@
+
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
@@ -23,29 +24,28 @@ async function verificaGestione() {
   if (
     error ||
     !profile ||
-    (profile.ruolo !== "superadmin" && profile.ruolo !== "direzione")
+    (profile.ruolo !== "superadmin" &&
+      profile.ruolo !== "direzione")
   ) {
     throw new Error("Non autorizzato.");
   }
 
-  return { supabase, user };
+  return { supabase };
 }
 
 export async function creaFamiglia(formData: FormData) {
   const { supabase } = await verificaGestione();
 
   const nome = String(formData.get("nome") ?? "").trim();
-  const codice = String(formData.get("codice") ?? "").trim();
 
   if (!nome) {
     throw new Error("Il nome della famiglia è obbligatorio.");
   }
 
-  const { error } = await supabase.from("famiglie").insert({
-    nome,
-    codice: codice || null,
-    attiva: true,
-  });
+  const { error } = await supabase.rpc(
+    "crea_famiglia_con_codice",
+    { p_nome: nome }
+  );
 
   if (error) {
     throw new Error(error.message);
@@ -59,7 +59,6 @@ export async function modificaFamiglia(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const nome = String(formData.get("nome") ?? "").trim();
-  const codice = String(formData.get("codice") ?? "").trim();
   const attiva = formData.get("attiva") === "true";
 
   if (!id) {
@@ -74,7 +73,6 @@ export async function modificaFamiglia(formData: FormData) {
     .from("famiglie")
     .update({
       nome,
-      codice: codice || null,
       attiva,
     })
     .eq("id", id);
