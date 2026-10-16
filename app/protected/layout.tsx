@@ -68,6 +68,7 @@ gruppo: "generale",
 { href: "/protected/importazioni/famiglie", label: "Importa famiglie", icona: "↓", gruppo: "amministrazione" },
 { href: "/protected/importazioni/soci", label: "Importa soci", icona: "↓", gruppo: "amministrazione" },
 { href: "/protected/audit", label: "Audit log", icona: "≡", gruppo: "amministrazione" },
+{ href: "/protected/pulizia-dati", label: "Pulizia dati", icona: "⌫", gruppo: "amministrazione" },
 ]
 : []),
 ];

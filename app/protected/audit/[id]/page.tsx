@@ -12,6 +12,21 @@ function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
+
+function formatAzione(azione: string) {
+  const etichette: Record<string, string> = {
+    eliminazione: "Eliminazione",
+    eliminazione_avviata: "Eliminazione avviata",
+    eliminazione_fallita: "Eliminazione fallita",
+    INSERT: "Inserimento",
+    UPDATE: "Modifica",
+    DELETE: "Eliminazione",
+  };
+
+  return etichette[azione] ?? azione;
+}
+
+
 export default async function AuditDetailPage({
   params,
 }: {
@@ -108,7 +123,7 @@ export default async function AuditDetailPage({
           </div>
 
           <div className="mt-1 font-semibold">
-            {evento.azione}
+            {formatAzione(evento.azione)}
           </div>
         </div>
 

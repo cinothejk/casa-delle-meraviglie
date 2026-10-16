@@ -16,7 +16,7 @@ import {
 import ActivityCreateModal from "./ActivityCreateModal";
 import ActivityDetailModal from "./ActivityDetailModal";
 import PartecipazioneInCorsoForm from "./PartecipazioneInCorsoForm";
-import FormLoadingOverlay from "@/components/FormLoadingOverlay";
+
 
 /**
  * Supabase può restituire una relazione come oggetto oppure come array.

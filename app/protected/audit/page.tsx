@@ -434,7 +434,18 @@ export default async function AuditPage({
 
                     <td className="px-4 py-3">
                       <span className="inline-flex rounded-full bg-[#F5D1BC]/40 px-2.5 py-1 text-xs font-medium text-[#8C4B35]">
-                        {evento.azione}
+                        
+                          {(
+                            {
+                              eliminazione: "Eliminazione",
+                              eliminazione_avviata: "Eliminazione avviata",
+                              eliminazione_fallita: "Eliminazione fallita",
+                              INSERT: "Inserimento",
+                              UPDATE: "Modifica",
+                              DELETE: "Eliminazione",
+                            } as Record<string, string>
+                          )[evento.azione] ?? evento.azione}
+
                       </span>
                     </td>
 

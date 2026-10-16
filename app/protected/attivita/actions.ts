@@ -906,3 +906,53 @@ export async function cambiaStatoAttivitaRapido(
 
   revalidatePath("/protected/attivita");
 }
+
+
+export async function eliminaAttivita(id: string) {
+  const supabase = await verificaGestione();
+
+  if (!id || !id.trim()) {
+    throw new Error("Attività non specificata.");
+  }
+
+  // Recupera l'attività prima della cancellazione.
+  const { data: attivita, error: letturaError } = await supabase
+    .from("attivita")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (letturaError || !attivita) {
+    throw new Error("Attività non trovata.");
+  }
+
+  // Registra l'operazione prima di eliminare il record.
+  const { error: auditError } = await supabase.rpc("registra_audit", {
+    p_azione: "eliminazione",
+    p_tabella: "attivita",
+    p_record_id: attivita.id,
+    p_dati_precedenti: attivita,
+    p_dati_nuovi: null,
+  });
+
+  if (auditError) {
+    console.error("Errore registrazione audit:", auditError);
+    throw new Error(
+      "Impossibile registrare l'eliminazione nell'Audit Log. Attività non eliminata."
+    );
+  }
+
+  // Le partecipazioni collegate vengono gestite dal CASCADE del database.
+  const { error: eliminazioneError } = await supabase
+    .from("attivita")
+    .delete()
+    .eq("id", id);
+
+  if (eliminazioneError) {
+    console.error("Errore eliminazione attività:", eliminazioneError);
+    throw new Error("Errore durante l'eliminazione dell'attività.");
+  }
+
+  revalidatePath("/protected/attivita");
+  revalidatePath("/protected/pulizia-dati");
+}
